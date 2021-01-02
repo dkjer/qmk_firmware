@@ -68,6 +68,11 @@ action_t action_for_key(uint8_t layer, keypos_t key) {
             action.code = ACTION_USAGE_CONSUMER(KEYCODE2CONSUMER(keycode));
             break;
 #endif
+#ifdef APPLE_FN_ENABLE
+        case KC_APPLE_FN:
+            action.code = ACTION_APPLE_FN();
+            break;
+#endif
 #ifdef MOUSEKEY_ENABLE
         case KC_MS_UP ... KC_MS_ACCEL2:
             action.code = ACTION_MOUSEKEY(keycode);

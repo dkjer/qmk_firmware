@@ -592,3 +592,7 @@ endif
 ifeq ($(strip $(JOYSTICK_ENABLE)), digital)
     OPT_DEFS += -DDIGITAL_JOYSTICK_ENABLE
 endif
+
+ifeq ($(strip $(APPLE_FN_ENABLE)), yes)
+    OPT_DEFS += -DAPPLE_FN_ENABLE
+endif
