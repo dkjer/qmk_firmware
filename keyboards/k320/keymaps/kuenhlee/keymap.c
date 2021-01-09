@@ -166,9 +166,3 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 void matrix_init_user(void) {
   set_unicode_input_mode(UC_WINC);
 }
-
-void matrix_scan_user(void) {
-}
-
-void led_set_user(uint8_t usb_led) {
-}
