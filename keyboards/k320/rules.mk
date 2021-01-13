@@ -1,7 +1,6 @@
-# MCU name : Use STM32F072 instead of STM32F070 as there are no entry in mcu_selection.mk. STM32F072 & STM32F070 are both ARMV = 6
-
+# MCU name
+# Actually F070, but close enough
 MCU = STM32F072
-
 
 BOARD = ST_NUCLEO64_F070RB
 
@@ -24,3 +23,5 @@ BACKLIGHT_ENABLE = no       # Enable keyboard backlight functionality
 RGBLIGHT_ENABLE = no        # Enable keyboard RGB underglow
 BLUETOOTH_ENABLE = no       # Enable Bluetooth
 AUDIO_ENABLE = no           # Audio output
+
+LAYOUTS = tkl_ansi

@@ -14,6 +14,10 @@ Make command example for this keyboard (after setting up your build environment)
 
     make k320:default
 
+Flashing example for this keyboard:
+
+    make k320:default:flash
+
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
 
 ### Initial Flash
@@ -45,8 +49,4 @@ For repeating Flashing you have two options:
 2. Use key combination if using default keymap
 - Hold down Fn + Menu (Windows Layout) or Fn + Right-Alt (Mac layout)  (These are the same physical keys)
 - Press Esc.  Keyboard should go into booloader state.
-
-Flashing command example for this keyboard:
-
-    make k320:default:flash
 
