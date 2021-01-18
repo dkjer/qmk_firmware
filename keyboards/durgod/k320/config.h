@@ -20,9 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config_common.h"
 
 /* USB Device descriptor parameter */
-#define VENDOR_ID       0xFEED
-#define PRODUCT_ID      0x0320
-#define DEVICE_VER      0x0003
+#define VENDOR_ID       0xD60D
+#define PRODUCT_ID      0x3200
+#define DEVICE_VER      0x0001
 #define MANUFACTURER    Hoksi Technology
 #define PRODUCT         DURGOD Taurus K320 (QMK)
 
