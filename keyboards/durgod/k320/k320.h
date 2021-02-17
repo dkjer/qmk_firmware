@@ -17,6 +17,15 @@
 
 #include "quantum.h"
 
+// Define the TGUI key here so it is available in QMK configurator
+enum K320_keycodes {
+    KC_TGUI = SAFE_RANGE,   // Toggle between GUI Lock or Unlock
+    NEW_SAFE_RANGE
+};
+
+#undef SAFE_RANGE
+#define SAFE_RANGE NEW_SAFE_RANGE
+
 /* Function Prototype */
 void off_all_leds(void);
 void on_all_leds(void);

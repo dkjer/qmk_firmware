@@ -16,6 +16,8 @@
 
 #include "k320.h"
 
+static bool win_key_locked = false;
+
 /* Private Functions */
 void off_all_leds(void) {
     writePinHigh(LED_CAPS_LOCK_PIN);
@@ -38,5 +40,22 @@ void led_init_ports(void) {
     setPinOutput(LED_WIN_LOCK_PIN);
     setPinOutput(LED_MR_LOCK_PIN);
     off_all_leds();
+}
+
+
+bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case KC_TGUI:
+            if (!record->event.pressed) {
+                // Toggle GUI lock on key release
+                win_key_locked = !win_key_locked;
+                writePin(LED_WIN_LOCK_PIN, !win_key_locked);
+            }
+            break;
+        case KC_LGUI:
+            if (win_key_locked) { return false; }
+            break;
+    }
+    return process_record_user(keycode, record);
 }
 
