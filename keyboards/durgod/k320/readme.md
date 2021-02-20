@@ -1,6 +1,6 @@
 # K320
 
-This is a standard fixed ANSI TKL from off the shelf Durgod Taurus K320 without Backlight.
+This is a standard TKL from off the shelf Durgod Taurus K320 without Backlight.
 
 * Keyboard Maintainer: [dkjer](https://github.com/dkjer)
 * Hardware Supported: Durgod Taurus K320 board with STM32F070RBT6
@@ -8,15 +8,25 @@ This is a standard fixed ANSI TKL from off the shelf Durgod Taurus K320 without 
 
 ## Instructions
 
-### Build
+### Build ANSI
 
 Make command example for this keyboard (after setting up your build environment):
 
-    make durgod/k320:default
+    make durgod/k320/ansi:default
 
 Flashing example for this keyboard:
 
-    make durgod/k320:default:flash
+    make durgod/k320/ansi:default:flash
+
+### Build ISO
+
+Make command example for this keyboard (after setting up your build environment):
+
+    make durgod/k320/iso:default
+
+Flashing example for this keyboard:
+
+    make durgod/k320/iso:default:flash
 
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
 

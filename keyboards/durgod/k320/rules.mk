@@ -1,3 +1,6 @@
+# Defalt to the ansi version
+DEFAULT_FOLDER = durgod/k320/ansi
+
 # MCU name
 # Actually F070, but close enough
 MCU = STM32F072
@@ -23,5 +26,3 @@ BACKLIGHT_ENABLE = no       # Enable keyboard backlight functionality
 RGBLIGHT_ENABLE = no        # Enable keyboard RGB underglow
 BLUETOOTH_ENABLE = no       # Enable Bluetooth
 AUDIO_ENABLE = no           # Audio output
-
-LAYOUTS = tkl_ansi tkl_iso

@@ -1,5 +1,5 @@
 {
-  "keyboard": "durgod/k320",
+  "keyboard": "durgod/k320/ansi",
   "keymap": "default",
   "layout": "LAYOUT_tkl_ansi",
   "layers": [

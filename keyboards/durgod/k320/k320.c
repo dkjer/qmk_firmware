@@ -16,8 +16,6 @@
 
 #include "k320.h"
 
-static bool win_key_locked = false;
-
 /* Private Functions */
 void off_all_leds(void) {
     writePinHigh(LED_CAPS_LOCK_PIN);
@@ -43,6 +41,9 @@ void led_init_ports(void) {
 }
 
 
+#ifndef WINLOCK_DISABLED
+static bool win_key_locked = false;
+
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case KC_TGUI:
@@ -58,4 +59,5 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     }
     return process_record_user(keycode, record);
 }
+#endif /* WINLOCK_DISABLED */
 
