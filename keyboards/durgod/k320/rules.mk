@@ -5,7 +5,7 @@ DEFAULT_FOLDER = durgod/k320/ansi
 # Actually F070, but close enough
 MCU = STM32F072
 
-BOARD = ST_NUCLEO64_F070RB
+BOARD = DURGOD_STM32_F070
 
 # Do not put the microcontroller into power saving mode
 OPT_DEFS += -DNO_SUSPEND_POWER_DOWN
