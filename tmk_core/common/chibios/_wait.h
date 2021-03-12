@@ -26,7 +26,21 @@
             chThdSleepMicroseconds(1);  \
         }                               \
     } while (0)
-#define wait_us(us)                     \
+
+#ifdef WAIT_US_TIMER
+# include <hal.h>
+# define wait_us(us)                                        \
+    do {                                                    \
+        if (us == 0) {                                      \
+            timer_wait_us(1);                               \
+        } else if (us < (1ULL << (sizeof(gptcnt_t) * 8))) { \
+            timer_wait_us(us);                              \
+        } else {                                            \
+            chThdSleepMicroseconds(us);                     \
+        }                                                   \
+    } while (0)
+#else
+# define wait_us(us)                    \
     do {                                \
         if (us != 0) {                  \
             chThdSleepMicroseconds(us); \
@@ -34,6 +48,7 @@
             chThdSleepMicroseconds(1);  \
         }                               \
     } while (0)
+#endif
 
 /* For GPIOs on ARM-based MCUs, the input pins are sampled by the clock of the bus
  * to which the GPIO is connected.

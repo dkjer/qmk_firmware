@@ -1,4 +1,5 @@
 #include <ch.h>
+#include <hal.h>
 
 #include "timer.h"
 
@@ -8,7 +9,18 @@ static uint32_t last_systime = 0;
 static uint32_t overflow     = 0;
 #endif
 
-void timer_init(void) { timer_clear(); }
+#ifdef WAIT_US_TIMER
+static thread_t *main_thread = NULL;
+static const GPTConfig gpt_cfg = { 100000, NULL, 0, 0 }; /* 1MHz timer, no callback */
+#endif
+
+void timer_init(void) {
+#ifdef WAIT_US_TIMER
+    main_thread = chThdGetSelfX();
+#endif
+
+    timer_clear();
+}
 
 void timer_clear(void) {
     reset_point = (uint32_t)chVTGetSystemTime();
@@ -45,3 +57,18 @@ uint32_t timer_read32(void) {
 uint16_t timer_elapsed(uint16_t last) { return TIMER_DIFF_16(timer_read(), last); }
 
 uint32_t timer_elapsed32(uint32_t last) { return TIMER_DIFF_32(timer_read32(), last); }
+
+#ifdef WAIT_US_TIMER
+void timer_wait_us(gptcnt_t duration) {
+    /*
+     * Only use this timer on the main thread;
+     * other threads need to use their own timer.
+     */
+    if (chThdGetSelfX() == main_thread) {
+        gptStart(&WAIT_US_TIMER, &gpt_cfg);
+        gptPolledDelay(&WAIT_US_TIMER, duration);
+    } else {
+        chThdSleepMicroseconds(duration);
+    }
+}
+#endif
