@@ -42,12 +42,12 @@ Here is an example using 2 drivers.
 #define LED_DRIVER_ADDR_2 0b1110110
 
 #define LED_DRIVER_COUNT 2
-#define LED_DRIVER_1_LED_COUNT 25
-#define LED_DRIVER_2_LED_COUNT 24
-#define DRIVER_LED_TOTAL LED_DRIVER_1_LED_TOTAL + LED_DRIVER_2_LED_TOTAL
+#define LED_DRIVER_1_LED_TOTAL 25
+#define LED_DRIVER_2_LED_TOTAL 24
+#define DRIVER_LED_TOTAL (LED_DRIVER_1_LED_TOTAL + LED_DRIVER_2_LED_TOTAL)
 ```
 
-Currently only 2 drivers are supported, but it would be trivial to support all 4 combinations.
+!> Note the parentheses, this is so when `LED_DRIVER_LED_TOTAL` is used in code and expanded, the values are added together before any additional math is applied to them. As an example, `rand() % (LED_DRIVER_1_LED_TOTAL + LED_DRIVER_2_LED_TOTAL)` will give very different results than `rand() % LED_DRIVER_1_LED_TOTAL + LED_DRIVER_2_LED_TOTAL`.
 
 Define these arrays listing all the LEDs in your `<keyboard>.c`:
 
