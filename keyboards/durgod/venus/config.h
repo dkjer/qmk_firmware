@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /* USB Device descriptor parameter */
 #define VENDOR_ID       0xD60D
-#define PRODUCT_ID      0x73c5
+#define PRODUCT_ID      0x7EC5
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    Hoksi Technology
 #define PRODUCT         DURGOD Venus (QMK)

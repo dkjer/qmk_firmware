@@ -29,8 +29,7 @@ For first Flashing from initial Stock's Firmware
 - Short Boot0 to Vdd (See below)
 - Plug In USB
 - Make a Flash Image's Backup in case you wanted to restore the Keyboard to Stock's Image:
-  - Using DFUseDemo.exe from ST's STSW-STM32080: https://www.st.com/en/development-tools/stsw-stm32080.html
-  - Using dfu-util (thanks to [tylert](https://github.com/tylert) for instructions!):
+  - Using dfu-util:
 
 
     dfu-util --list
@@ -46,7 +45,7 @@ For first Flashing from initial Stock's Firmware
 
     dfu-util --alt 0 --dfuse-address 0x08000000 --upload ${NEW_QMK_BIN}
 
-You can short Boot0 to Vdd by shorting R21 to C27 on the sides closest to the processor, as shown:
+You can short Boot0 to Vdd by shorting R19 to C30 on the sides closest to the processor, as shown:
 
 <img src="https://i.imgur.com/hvDnw5a.jpg" width="520" height="693" alt="Shorting Boot0 to Vdd on K320">
 
