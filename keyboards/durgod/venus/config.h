@@ -41,6 +41,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  4095
 #define DYNAMIC_KEYMAP_LAYER_COUNT 10
 
+// Mouse configuration
+#define MOUSEKEY_INTERVAL 16
+#define MOUSEKEY_MAX_SPEED 5
+
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 5
 
