@@ -1,6 +1,6 @@
-# The default keymap for Durgod Venus.
+# The via keymap for Durgod Venus.
 
-Layer 0 : Standard ANSI 60 Keys layout
+Layer 0 : Standard layout
 
 Layer 1 : F1-12 and additional navigation keys.
 
