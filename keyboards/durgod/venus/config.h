@@ -38,7 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // Dynamic EEPROM
 // Something sensible or else VIA may crash
 // Users may enable more if they wish
-#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  8191
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  4095
 #define DYNAMIC_KEYMAP_LAYER_COUNT 10
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
