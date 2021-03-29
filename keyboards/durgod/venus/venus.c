@@ -127,11 +127,13 @@ led_config_t g_led_config = { {
 } };
 
 void suspend_power_down_kb(void) {
+    dprint("suspend_power_down_kb\n");
     rgb_matrix_set_suspend_state(true);
     suspend_power_down_user();
 }
 
 void suspend_wakeup_init_kb(void) {
+    dprint("suspend_wakeup_init_kb\n");
     rgb_matrix_set_suspend_state(false);
     suspend_wakeup_init_user();
 }
@@ -159,6 +161,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case KC_LGUI:
+            dprint("KC_LGUI\n");
             if (win_key_locked) { return false; }
             break;
     }
