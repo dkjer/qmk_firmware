@@ -40,6 +40,11 @@
 // Users may enable more if they wish
 #define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  4095
 
+#define FEE_DENSITY_PAGES 2
+#define FEE_WRITE_LOG_PAGES 8
+
+#define DEBUG_EEPROM
+
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 5
 

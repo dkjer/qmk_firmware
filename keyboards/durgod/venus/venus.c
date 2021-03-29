@@ -169,3 +169,11 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 }
 #endif /* WINLOCK_DISABLED */
 
+void keyboard_post_init_kb(void) {
+  // Customise these values to desired behaviour
+  debug_enable=true;
+  debug_matrix=false;
+  debug_keyboard=false;
+  debug_mouse=false;
+}
+
