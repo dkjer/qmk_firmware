@@ -15,9 +15,21 @@
  */
 #include QMK_KEYBOARD_H
 
+#include "eeprom_stm32.h"
+#include "eeprom.h"
+#include "string.h"
+
 // Tap Dance declarations
 enum {
     TD_GRV_ESC,
+};
+
+enum KEYMAP_keycodes {
+    KC_INIT = SAFE_RANGE,
+    KC_ERASE,
+    KC_WRITE,
+    KC_READ,
+    KC_UNWRITE
 };
 
 // Tap Dance definitions
@@ -101,7 +113,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * └────┴────┴────┴────────────────────────┴────┴────┴────┴────┘
    */
   [3] = LAYOUT_60_ansi(
-      XXXXXXX,  RGB_M_P,  RGB_M_B,  RGB_M_R,  RGB_M_SW, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+      XXXXXXX,  RGB_M_P,  RGB_M_B,  RGB_M_R,  RGB_M_SW, XXXXXXX,  XXXXXXX,  XXXXXXX,  KC_UNWRITE,  KC_READ,  KC_WRITE,  KC_ERASE,  KC_INIT,  XXXXXXX,
       XXXXXXX,  XXXXXXX,  RGB_SAI,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
       XXXXXXX,  RGB_HUD,  RGB_SAD,  RGB_HUI,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
       XXXXXXX,            XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
@@ -156,6 +168,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX
   ),
   [9] = LAYOUT_60_ansi(
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
+      XXXXXXX,            XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX
+  ),
+  [10] = LAYOUT_60_ansi(
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
+      XXXXXXX,            XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
+      XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX
+  ),
+  [11] = LAYOUT_60_ansi(
       XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
       XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
       XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
@@ -265,7 +291,17 @@ void rgb_matrix_indicators_user(void) {
 
 }
 
+typedef struct {
+    uint8_t tByte;
+    uint16_t tWord;
+    bool tBool;
+    char tString[17];
+} test_t;
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    if (!record->event.pressed) {
+        return true;
+    }
     switch (keycode) {
         case RESET:
             if (record->event.pressed) {
@@ -273,6 +309,147 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 on_all_leds();
             }
             break;
+        case KC_INIT:
+            EEPROM_Init();
+            break;
+        case KC_ERASE:
+            EEPROM_Erase();
+            break;
+        case KC_WRITE:
+        {
+            EEPROM_WriteDataByte(0xf70, 0xbe);
+            EEPROM_WriteDataByte(0xf71, 0xef);
+            eeprom_update_word((uint16_t*)0xf72, 0xdead);
+            eeprom_update_word((uint16_t*)0xf76, 0x1);
+            EEPROM_WriteDataByte(0xe40, 0xaa);
+            EEPROM_WriteDataByte(0xe43, 0xaa);
+            eeprom_update_word((uint16_t*)0xe41, 0xba1d);
+            eeprom_update_dword((uint32_t*)0xe60, 0xdeadbeef);
+            EEPROM_WriteDataByte(0xe20, 0xaa);
+            EEPROM_WriteDataByte(0xe25, 0xaa);
+            eeprom_update_dword((uint32_t*)0xe21, 0x0ffba5ed);
+            test_t obj;
+            obj.tByte = 0x42;
+            obj.tWord = 0xfee7;
+            obj.tBool = true;
+            memcpy(&obj.tString, "0123456789abcdef\0", sizeof(obj.tString));
+            EEPROM_WriteDataByte(0xdff, 0xaa);
+            EEPROM_WriteDataByte(0xe00+sizeof(obj), 0xaa);
+            eeprom_update_block(&obj, (void*)0xe00, sizeof(obj));
+            char str[17] = "fedcba9876543210\0";
+            EEPROM_WriteDataByte(0xe7f, 0xaa);
+            EEPROM_WriteDataByte(0xe91, 0xaa);
+            eeprom_update_block(str, (void*)0xe80, 17);
+            EEPROM_WriteDataByte(0xf00, 0xaa);
+            EEPROM_WriteDataByte(0xf12, 0xaa);
+            eeprom_update_block(str, (void*)0xf01, 17);
+            char str3[16] = "edcba9876543210\0";
+            EEPROM_WriteDataByte(0x87f, 0xaa);
+            EEPROM_WriteDataByte(0x890, 0xaa);
+            eeprom_update_block(str3, (void*)0x880, 16);
+            EEPROM_WriteDataByte(0x800, 0xaa);
+            EEPROM_WriteDataByte(0x811, 0xaa);
+            eeprom_update_block(str3, (void*)0x801, 16);
+            EEPROM_WriteDataByte(0x6ff, 0xaa);
+            EEPROM_WriteDataByte(0x711, 0xaa);
+            eeprom_update_block(&str3[1], (void*)0x700, 15);
+            EEPROM_WriteDataByte(0x680, 0xaa);
+            EEPROM_WriteDataByte(0x692, 0xaa);
+            eeprom_update_block(&str3[1], (void*)0x681, 15);
+            break;
+        }
+        case KC_READ:
+        {
+            uint8_t b0 = EEPROM_ReadDataByte(0xf70);
+            uint8_t b1 = EEPROM_ReadDataByte(0xf71);
+            dprintf("bytes 0, 1:  0x%x, 0x%x\n", b0, b1);
+            uint16_t magic = eeprom_read_word(0);
+            dprintf("magic: 0x%04x\n", magic);
+            uint16_t dead = eeprom_read_word((uint16_t*)0xf72);
+            dprintf("dead: 0x%04x\n", dead);
+            uint16_t one = eeprom_read_word((uint16_t*)0xf76);
+            dprintf("one: 0x%04x\n", one);
+            uint16_t bald = eeprom_read_word((uint16_t*)0xe41);
+            bool valid = (EEPROM_ReadDataByte(0xe40) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0xe43) == 0xaa);
+            dprintf("bald [%d]: 0x%04x\n", valid, bald);
+            uint32_t deadbeef = eeprom_read_dword((uint32_t*)0xe60);
+            dprintf("deadbeef: 0x%08x\n", deadbeef);
+            uint32_t offba5ed = eeprom_read_dword((uint32_t*)0xe21);
+            valid  = (EEPROM_ReadDataByte(0xe20) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0xe25) == 0xaa);
+            dprintf("0ffba5ed [%d]: 0x%08x\n", valid, offba5ed);
+            test_t obj;
+            eeprom_read_block(&obj, (void*)0xe00, sizeof(obj));
+            valid  = (EEPROM_ReadDataByte(0xdff) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0xe00+sizeof(obj)) == 0xaa);
+            dprintf("obj [%d]: 0x%02x 0x%04x %s %d\n", valid, obj.tByte, obj.tWord, obj.tString, obj.tBool);
+            char str[17];
+            eeprom_read_block(str, (void*)0xe80, 17);
+            valid  = (EEPROM_ReadDataByte(0xe7f) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0xe91) == 0xaa);
+            dprintf("str1 [%d]: %s\n", valid, str);
+            eeprom_read_block(str, (void*)0xf01, 17);
+            valid  = (EEPROM_ReadDataByte(0xf00) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0xf12) == 0xaa);
+            dprintf("str2 [%d]: %s\n", valid, str);
+            eeprom_read_block(str, (void*)0x880, 16);
+            valid  = (EEPROM_ReadDataByte(0x87f) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0x890) == 0xaa);
+            dprintf("str3 [%d]: %s\n", valid, str);
+            eeprom_read_block(str, (void*)0x801, 16);
+            valid  = (EEPROM_ReadDataByte(0x800) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0x811) == 0xaa);
+            dprintf("str4 [%d]: %s\n", valid, str);
+            eeprom_read_block(str, (void*)0x700, 15);
+            valid  = (EEPROM_ReadDataByte(0x6ff) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0x711) == 0xaa);
+            dprintf("str5 [%d]: %s\n", valid, str);
+            eeprom_read_block(str, (void*)0x681, 15);
+            valid  = (EEPROM_ReadDataByte(0x680) == 0xaa);
+            valid &= (EEPROM_ReadDataByte(0x692) == 0xaa);
+            dprintf("str6 [%d]: %s\n", valid, str);
+            break;
+        }
+        case KC_UNWRITE:
+        {
+            EEPROM_WriteDataByte(0xf70, 0);
+            EEPROM_WriteDataByte(0xf71, 0);
+            EEPROM_WriteDataByte(0xe40, 0);
+            EEPROM_WriteDataByte(0xe43, 0);
+            eeprom_update_word((uint16_t*)0xf72, (uint16_t)0L);
+            eeprom_update_word((uint16_t*)0xf76, (uint16_t)0L);
+            eeprom_update_word((uint16_t*)0xe41, (uint16_t)0L);
+            eeprom_update_dword((uint32_t*)0xe60, (uint32_t)0L);
+            EEPROM_WriteDataByte(0xe20, 0);
+            EEPROM_WriteDataByte(0xe25, 0);
+            eeprom_update_dword((uint32_t*)0xe21, (uint32_t)0L);
+            test_t obj = {0};
+            EEPROM_WriteDataByte(0xdff, 0);
+            EEPROM_WriteDataByte(0xe00+sizeof(obj), 0);
+            eeprom_update_block(&obj, (void*)0xe00, sizeof(obj));
+            char str[17] = {0};
+            EEPROM_WriteDataByte(0xe7f, 0);
+            EEPROM_WriteDataByte(0xe91, 0);
+            eeprom_update_block(str, (void*)0xe80, 17);
+            EEPROM_WriteDataByte(0xf00, 0);
+            EEPROM_WriteDataByte(0xf12, 0);
+            eeprom_update_block(str, (void*)0xf01, 17);
+            EEPROM_WriteDataByte(0x87f, 0);
+            EEPROM_WriteDataByte(0x890, 0);
+            eeprom_update_block(str, (void*)0x880, 16);
+            EEPROM_WriteDataByte(0x800, 0);
+            EEPROM_WriteDataByte(0x811, 0);
+            eeprom_update_block(str, (void*)0x801, 16);
+            EEPROM_WriteDataByte(0x6ff, 0);
+            EEPROM_WriteDataByte(0x711, 0);
+            eeprom_update_block(str, (void*)0x700, 15);
+            EEPROM_WriteDataByte(0x680, 0);
+            EEPROM_WriteDataByte(0x692, 0);
+            eeprom_update_block(str, (void*)0x681, 15);
+            break;
+        }
     }
     return true;
 }
+

@@ -15,6 +15,8 @@
  */
 
 #include "k320.h"
+#include "eeprom_stm32.h"
+#include "eeprom.h"
 
 /* Private Functions */
 void off_all_leds(void) {
@@ -41,22 +43,35 @@ void led_init_ports(void) {
 }
 
 
-#ifndef WINLOCK_DISABLED
-static bool win_key_locked = false;
+//#ifndef WINLOCK_DISABLED
+//static bool win_key_locked = false;
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case KC_TGUI:
-            if (record->event.pressed) {
-                // Toggle GUI lock on key press
-                win_key_locked = !win_key_locked;
-                writePin(LED_WIN_LOCK_PIN, !win_key_locked);
-            }
-            break;
-        case KC_LGUI:
-            if (win_key_locked) { return false; }
+        //case KC_TGUI:
+        //    if (record->event.pressed) {
+        //        // Toggle GUI lock on key press
+        //        win_key_locked = !win_key_locked;
+        //        writePin(LED_WIN_LOCK_PIN, !win_key_locked);
+        //    }
+        //    break;
+        //case KC_LGUI:
+        //    if (win_key_locked) { return false; }
+        //    break;
+        case KC_HOME:
+            dprintf("calling EEPROM_Init\n");
+            EEPROM_Init();
+            dprintf("done calling EEPROM_Init\n");
             break;
     }
     return process_record_user(keycode, record);
 }
-#endif /* WINLOCK_DISABLED */
+//#endif /* WINLOCK_DISABLED */
+
+void keyboard_post_init_kb(void) {
+  // Customise these values to desired behaviour
+  debug_enable=true;
+  debug_matrix=false;
+  debug_keyboard=false;
+  debug_mouse=false;
+}
