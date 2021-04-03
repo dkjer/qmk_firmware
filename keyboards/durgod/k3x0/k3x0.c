@@ -40,37 +40,106 @@ void on_all_leds(void) {
     writePinLow(LED_MR_LOCK_PIN);
 }
 
-/* WinLock and MR LEDs are non-standard. Need to override led init */
-void led_init_ports(void) {
-#ifdef LED_NUM_LOCK_PIN
-    setPinOutput(LED_NUM_LOCK_PIN);
-#endif
-    setPinOutput(LED_CAPS_LOCK_PIN);
-    setPinOutput(LED_SCROLL_LOCK_PIN);
-    setPinOutput(LED_WIN_LOCK_PIN);
-    setPinOutput(LED_MR_LOCK_PIN);
-    off_all_leds();
+static bool winlock_state = false;
+static bool mrlock_state = false;
+
+bool get_winlock_state(void) { return winlock_state; }
+bool get_mrlock_state(void) { return mrlock_state; }
+
+void set_winlock_state(bool value) {
+    winlock_state = value;
+    writePin(LED_WIN_LOCK_PIN, !winlock_state);
 }
 
-#ifndef WINLOCK_DISABLED
-static bool win_key_locked = false;
+void set_mrlock_state(bool value) {
+    mrlock_state = value;
+    writePin(LED_MR_LOCK_PIN, !mrlock_state);
+}
+
+bool toggle_winlock_state(void) {
+    set_winlock_state(!winlock_state);
+    return winlock_state;
+}
+
+bool toggle_mrlock_state(void) {
+    set_mrlock_state(!mrlock_state);
+    return mrlock_state;
+}
+
+void blink_all_leds(uint8_t count) {
+    if (!count) return;
+    led_t orig_state = host_keyboard_led_state();
+    on_all_leds();
+    wait_ms(100);
+    for (uint8_t i = 1; i < count; ++i) {
+        off_all_leds();
+        wait_ms(100);
+        on_all_leds();
+        wait_ms(100);
+    }
+#ifdef LED_NUM_LOCK_PIN
+    writePin(LED_NUM_LOCK_PIN, !orig_state.num_lock);
+#endif
+    writePin(LED_CAPS_LOCK_PIN, !orig_state.caps_lock);
+    writePin(LED_SCROLL_LOCK_PIN, !orig_state.scroll_lock);
+    writePin(LED_WIN_LOCK_PIN, !winlock_state);
+    writePin(LED_MR_LOCK_PIN, !mrlock_state);
+}
+
+void matrix_init_kb(void) {
+    setPinOutput(LED_WIN_LOCK_PIN);
+    setPinOutput(LED_MR_LOCK_PIN);
+    set_winlock_state(false);
+    set_mrlock_state(false);
+#ifndef STARTUP_BLINK_DISABLED
+    blink_all_leds(1);
+#else
+    off_all_leds();
+#endif
+    matrix_init_user();
+}
 
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+    if (!process_record_user(keycode, record)) { return false; }
     switch (keycode) {
+        case RESET:
+            if (record->event.pressed) {
+                // Flash LEDs to indicate bootloader mode is enabled.
+                blink_all_leds(2);
+            }
+            break;
+#ifndef WINLOCK_DISABLED
         case KC_TGUI:
             if (record->event.pressed) {
                 // Toggle GUI lock on key press
-                win_key_locked = !win_key_locked;
-                writePin(LED_WIN_LOCK_PIN, !win_key_locked);
+                toggle_winlock_state();
             }
             break;
         case KC_LGUI:
-            if (win_key_locked) { return false; }
+            if (get_winlock_state()) { return false; }
             break;
+#endif
+#if defined(LED_MATRIX_ENABLE) && !defined(LED_LIMITS_INDICATOR_DISABLED)
+        case BL_INC:
+        case BL_DEC:
+            if (record->event.pressed) {
+                uint8_t old_val = led_matrix_eeconfig.val;
+                if (keycode == BL_INC) {
+                    led_matrix_increase_val();
+                }
+                else /* keycode == BL_DEC */ {
+                    led_matrix_decrease_val();
+                }
+                /* If the value reached its limit, blink leds */
+                if (led_matrix_eeconfig.val == old_val) {
+                    blink_all_leds(2);
+                }
+            }
+            return false;
+#endif
     }
-    return process_record_user(keycode, record);
+    return true;
 }
-#endif /* WINLOCK_DISABLED */
 
 #ifndef HW_RESET_PIN_DISABLED
 static void hardware_reset_cb(void *arg) {
@@ -92,5 +161,17 @@ void keyboard_pre_init_kb(void) {
     if (!readPin(HARDWARE_RESET_PIN)) {
         bootloader_jump();
     }
-#endif
+#endif /* HW_RESET_PIN_DISABLED */
 }
+
+#ifdef LED_MATRIX_ENABLE
+void suspend_power_down_kb(void) {
+    led_matrix_set_suspend_state(true);
+    suspend_power_down_user();
+}
+
+void suspend_wakeup_init_kb(void) {
+    led_matrix_set_suspend_state(false);
+    suspend_wakeup_init_user();
+}
+#endif

@@ -33,16 +33,14 @@ enum _layer {
 # define ALT_LAYOUT     _MBL // Layout to display 'MR' led when active.
 #endif
 
-static bool win_key_locked = false;
-static bool mac_media_locked = false;
 static bool win_appkey_pressed = false;
 static bool mac_fnkey_pressed = false;
 
 
 // Defines the keycodes used by our macros in process_record_user
 enum custom_keycodes {
-    KC_TGUI = SAFE_RANGE,  // Toggle between GUI Lock or Unlock (Windows)
-    KC_TMED,               // Toggle between Fx keys or Media keys (Mac)
+    KC_TMED = SAFE_RANGE,  // Toggle between Fx keys or Media keys (Mac)
+    KC_MGUI,               // GUI key on mac layer to avoid winlock
     KC_WFN,                // Windows function key
     KC_MFN,                // Mac function key
     MO_WSL,                // Windows system key
@@ -50,6 +48,21 @@ enum custom_keycodes {
     DF_W2MBL,              // Change layout from Windows to Mac
     DF_M2WBL               // Change layout from Mac to Windows
 };
+
+// Define LED matrix keys
+#ifdef LED_MATRIX_ENABLE
+# define FN_PSCR BL_STEP
+# define FN_INS  BL_ON
+# define FN_DEL  BL_OFF
+# define FN_UP   BL_INC
+# define FN_DOWN BL_DEC
+#else
+# define FN_PSCR KC_TRNS
+# define FN_INS  KC_TRNS
+# define FN_DEL  KC_TRNS
+# define FN_UP   KC_TRNS
+# define FN_DOWN KC_TRNS
+#endif
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /* Keymap _WBL: Windows Base Layer (Default Layer)
@@ -78,27 +91,27 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     /* Keymap _WFL: Windows Function Layer
    * ┌───┐   ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┐
-   * │   │   │Ply│Stp│Prv│Nxt│ │Mut│Vo+│Vo-│   │ │   │   │   │   │ │   │   │Mut│
+   * │   │   │Ply│Stp│Prv│Nxt│ │Mut│Vo+│Vo-│   │ │   │   │   │   │ │BST│   │Mut│
    * └───┘   └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┘
    * ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐ ┌───┬───┬───┐ ┌───┬───┬───┬───┐
-   * │   │   │   │   │   │   │   │   │   │   │   │   │   │       │ │   │   │Vo+│ │   │   │   │   │
+   * │   │   │   │   │   │   │   │   │   │   │   │   │   │       │ │BON│   │Vo+│ │   │   │   │   │
    * ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤ ├───┼───┼───┤ ├───┼───┼───┼───┤
-   * │     │   │   │   │   │   │   │   │   │   │   │   │   │     │ │   │   │Vo-│ │   │   │   │   │
+   * │     │   │   │   │   │   │   │   │   │   │   │   │   │     │ │BOF│   │Vo-│ │   │   │   │   │
    * ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬┈┈┈┈┤ └───┴───┴───┘ ├───┼───┼───┤   │
    * │      │   │   │   │   │   │   │   │   │   │   │   │   │    │               │   │   │   │   │
    * ├────┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┴────┤     ┌───┐     ├───┼───┼───┼───┤
-   * │    │   │   │   │   │   │   │   │   │   │   │   │          │     │   │     │   │   │   │   │
+   * │    │   │   │   │   │   │   │   │   │   │   │   │          │     │BL+│     │   │   │   │   │
    * ├────┼───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤ ┌───┼───┼───┐ ├───┴───┼───┤   │
-   * │    │Lock│    │                        │    │Func│ Sys│    │ │   │   │   │ │       │   │   │
+   * │    │Lock│    │                        │    │Func│ Sys│    │ │   │BL-│   │ │       │   │   │
    * └────┴────┴────┴────────────────────────┴────┴────┴────┴────┘ └───┴───┴───┘ └───────┴───┴───┘
      */
   [_WFL] = LAYOUT_all( /* Windows Function Layer */
-        _______,          KC_MPLY, KC_MSTP, KC_MPRV, KC_MNXT, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______, _______, _______, _______,    _______, _______, KC_MUTE,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______, _______, KC_VOLU,    _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______, _______, KC_VOLD,    _______, _______, _______, _______,
+        _______,          KC_MPLY, KC_MSTP, KC_MPRV, KC_MNXT, KC_MUTE, KC_VOLD, KC_VOLU, _______, _______, _______, _______, _______,    FN_PSCR, _______, KC_MUTE,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    FN_INS,  _______, KC_VOLU,    _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    FN_DEL,  _______, KC_VOLD,    _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                                  _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,             _______,             _______, _______, _______, _______,
-        _______, KC_TGUI, _______,                            _______,                            _______, _______, MO_WSL,  _______,    _______, _______, _______,    _______,          _______
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,             FN_UP,               _______, _______, _______, _______,
+        _______, KC_TGUI, _______,                            _______,                            _______, _______, MO_WSL,  _______,    _______, FN_DOWN, _______,    _______,          _______
     ),
     /* Keymap _WSL: Windows System Layer
    * ┌───┐   ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┐
@@ -147,31 +160,31 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_LBRC, KC_RBRC, KC_BSLS,    KC_DEL,  KC_END,  KC_PGDN,    KC_P7,   KC_P8,   KC_P9,   KC_PPLS,
         KC_CAPS, KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_NUHS, KC_ENT,                                   KC_P4,   KC_P5,   KC_P6,
         KC_LSFT, KC_NUBS, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH,          KC_RSFT,             KC_UP,               KC_P1,   KC_P2,   KC_P3,   KC_PENT,
-        KC_LCTL, KC_LALT, KC_LGUI,                            KC_SPC,                             KC_RGUI, KC_RALT, KC_MFN,  KC_RCTL,    KC_LEFT, KC_DOWN, KC_RGHT,    KC_P0,            KC_PDOT
+        KC_LCTL, KC_LALT, KC_MGUI,                            KC_SPC,                             KC_RGUI, KC_RALT, KC_MFN,  KC_RCTL,    KC_LEFT, KC_DOWN, KC_RGHT,    KC_P0,            KC_PDOT
     ),
     /* Keymap _MFL: Mac Function Layer
    * ┌───┐   ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┐
-   * │   │   │Br-│Br+│   │   │ │   │   │Prv│Ply│ │Nxt│Mut│Vo-│Vo+│ │TMd│   │Mut│
+   * │   │   │Br-│Br+│   │   │ │   │   │Prv│Ply│ │Nxt│Mut│Vo-│Vo+│ │BST│TMd│Mut│
    * └───┘   └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┘
    * ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐ ┌───┬───┬───┐ ┌───┬───┬───┬───┐
-   * │   │   │   │   │   │   │   │   │   │   │   │   │   │       │ │   │   │Vo+│ │   │   │   │   │
+   * │   │   │   │   │   │   │   │   │   │   │   │   │   │       │ │BON│   │Vo+│ │   │   │   │   │
    * ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤ ├───┼───┼───┤ ├───┼───┼───┼───┤
-   * │     │   │   │   │   │   │   │   │   │   │   │   │   │     │ │   │   │Vo-│ │   │   │   │   │
+   * │     │   │   │   │   │   │   │   │   │   │   │   │   │     │ │BOF│   │Vo-│ │   │   │   │   │
    * ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬┈┈┈┈┤ └───┴───┴───┘ ├───┼───┼───┤   │
    * │      │   │   │   │   │   │   │   │   │   │   │   │   │    │               │   │   │   │   │
    * ├────┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┴────┤     ┌───┐     ├───┼───┼───┼───┤
-   * │    │   │   │   │   │   │   │   │   │   │   │   │          │     │   │     │   │   │   │   │
+   * │    │   │   │   │   │   │   │   │   │   │   │   │          │     │BL+│     │   │   │   │   │
    * ├────┼───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤ ┌───┼───┼───┐ ├───┴───┼───┤   │
-   * │    │    │    │                        │    │ Sys│Func│    │ │   │   │   │ │       │   │   │
+   * │    │    │    │                        │    │ Sys│Func│    │ │   │BL-│   │ │       │   │   │
    * └────┴────┴────┴────────────────────────┴────┴────┴────┴────┘ └───┴───┴───┘ └───────┴───┴───┘
      */
   [_MFL] = LAYOUT_all( /* Mac Function Layer */
-        _______,          KC_BRID, KC_BRIU, _______, _______, _______, _______, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_VOLD, KC_VOLU,    KC_TMED, _______, KC_MUTE,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______, _______, KC_VOLU,     _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    _______, _______, KC_VOLD,     _______, _______, _______, _______,
+        _______,          KC_BRID, KC_BRIU, _______, _______, _______, _______, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_VOLD, KC_VOLU,    FN_PSCR, KC_TMED, KC_MUTE,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    FN_INS,  _______, KC_VOLU,     _______, _______, _______, _______,
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,    FN_DEL,  _______, KC_VOLD,     _______, _______, _______, _______,
         _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,                                   _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,             _______,              _______, _______, _______, _______,
-        _______, _______, _______,                            _______,                            _______, MO_MSL,  _______, _______,    _______, _______, _______,     _______,          _______
+        _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,          _______,             FN_UP,                _______, _______, _______, _______,
+        _______, _______, _______,                            _______,                            _______, MO_MSL,  _______, _______,    _______, FN_DOWN, _______,     _______,          _______
     ),
     /* Keymap _MSL: Mac System Layer
    * ┌───┐   ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┐
@@ -199,22 +212,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     )
 };
 
-void unlock_win_key(void) {
-    win_key_locked = false;
-    mac_media_locked = false;
-    writePinHigh(LED_WIN_LOCK_PIN);
-}
-
-void toggle_lock_win_key(void) {
-    win_key_locked = !win_key_locked;
-    writePin(LED_WIN_LOCK_PIN, !win_key_locked);
-}
-
-void toggle_lock_media_key(void) {
-    mac_media_locked = !mac_media_locked;
-    writePin(LED_WIN_LOCK_PIN, !mac_media_locked);
-}
-
 #ifdef CONSOLE_ENABLE
 void dprint_global_layers(void) {
     dprint("Global Layers:");
@@ -240,11 +237,11 @@ layer_state_t default_layer_state_set_user(layer_state_t state) {
     dprintf("default_layer_state_set_user: 0x%x\n", state);
     dprint_global_layers();
 #endif
-    // Disable windows key lock on default layer transition.
-    unlock_win_key();
     win_appkey_pressed = false;
     mac_fnkey_pressed = false;
-    writePin(LED_MR_LOCK_PIN, !IS_LAYER_ON_STATE(state, ALT_LAYOUT));
+    // Disable windows key lock on default layer transition.
+    set_winlock_state(false);
+    set_mrlock_state(IS_LAYER_ON_STATE(state, ALT_LAYOUT));
     return state;
 }
 
@@ -258,22 +255,21 @@ layer_state_t layer_state_set_user(layer_state_t state) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case KC_TGUI:
-            if (!record->event.pressed) {
-                // Toggle GUI lock on key release
-                toggle_lock_win_key();
-            }
-            break;
         case KC_TMED:
             // Only trigger when Fn key is also held down, to avoid accidental unlock.
             if (!mac_fnkey_pressed) { return false; }
             if (!record->event.pressed) {
                 // Toggle Media Lock on key release
-                toggle_lock_media_key();
+                toggle_winlock_state();
             }
             break;
-        case KC_LGUI:
-            if (win_key_locked) { return false; }
+        case KC_MGUI:
+            // Bypass 'winlock' functionality.
+            if (record->event.pressed) {
+                register_code(KC_LGUI);
+            } else {
+                unregister_code(KC_LGUI);
+            }
             break;
         case KC_WFN:
             // Like MO(_WFL), but also enables _WSL if KC_APP is already pressed down.
@@ -315,7 +311,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 }
             } else {
                 mac_fnkey_pressed = false;
-                if (!mac_media_locked) {
+                if (!get_winlock_state()) {
                     if (IS_LAYER_ON(_MFL)) { layer_off(_MFL); }
                     if (IS_LAYER_ON(_WSL)) { layer_off(_WSL); }
                 }
@@ -356,12 +352,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 // Switch base layer, but preserve first/secondary layers.
                 default_layer_set(1UL<<_WBL);
                 layer_state_set(1UL<<_WFL | 1UL<<_WSL);
-            }
-            break;
-        case RESET:
-            if (record->event.pressed) {
-                // Flash LEDs to indicate bootloader mode is enabled.
-                on_all_leds();
             }
             break;
     }

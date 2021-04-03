@@ -38,6 +38,18 @@ enum K3x0_keycodes {
 /* Function Prototype */
 void off_all_leds(void);
 void on_all_leds(void);
+void blink_all_leds(uint8_t count);
+
+// These wrap interacting with the WIN and MR LED indicators
+// It is preferable to use these getters/setters instead of 
+// directly setting WIN/MR pin states so that we can correctly
+// blink LEDs and reset them back to their current state.
+bool get_winlock_state(void);
+bool get_mrlock_state(void);
+void set_winlock_state(bool value);
+void set_mrlock_state(bool value);
+bool toggle_winlock_state(void);
+bool toggle_mrlock_state(void);
 
 #define XXX KC_NO
 

@@ -54,3 +54,37 @@
 
 /* Original hardware "reset" button on pin D2 */
 #define HARDWARE_RESET_PIN  D2
+
+#ifdef LED_MATRIX_ENABLE
+
+/* I2C Alternate function settings */
+#define I2C1_SCL_PAL_MODE 1
+#define I2C1_SDA_PAL_MODE 1
+
+/* Set I2C speed to 400kHz */
+#define I2C1_TIMINGR_PRESC     0U
+#define I2C1_TIMINGR_SCLDEL    9U
+#define I2C1_TIMINGR_SDADEL    0U
+#define I2C1_TIMINGR_SCLH     24U
+#define I2C1_TIMINGR_SCLL     78U
+
+// This is a 7-bit address, that gets left-shifted and bit 0
+// set to 0 for write, 1 for read (as per I2C protocol)
+// The address will vary depending on your wiring:
+// 0b1110100 AD <-> GND
+// 0b1110111 AD <-> VCC
+// 0b1110101 AD <-> SCL
+// 0b1110110 AD <-> SDA
+#define LED_DRIVER_ADDR_1 0b1110111
+
+#define LED_DRIVER_COUNT 1
+#ifdef ANSI_LAYOUT
+# define LED_DRIVER_1_LED_TOTAL 87
+#else /* ISO_LAYOUT */
+# define LED_DRIVER_1_LED_TOTAL 88
+#endif
+#define DRIVER_LED_TOTAL LED_DRIVER_1_LED_TOTAL
+
+#define LED_DISABLE_WHEN_USB_SUSPENDED true // turn off effects when suspended
+
+#endif /* LED_MATRIX_ENABLE */

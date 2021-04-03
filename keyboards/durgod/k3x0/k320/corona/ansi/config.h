@@ -1,4 +1,4 @@
-/* Copyright 2021 Simon Arlott
+/* Copyright 2021 Don Kjer
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,8 @@
 
 #pragma once
 
-#define HAL_USE_PAL                 TRUE
-#define PAL_USE_CALLBACKS           TRUE
+#include "config_common.h"
 
-#ifdef LED_MATRIX_ENABLE
-#  define HAL_USE_I2C TRUE
-#endif
-
-#include_next <halconf.h>
+/* Set layout */
+#undef ISO_LAYOUT
+#define ANSI_LAYOUT
