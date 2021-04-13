@@ -25,20 +25,33 @@ extern "C" {
 }
 
 /* Mock Flash Parameters:
- * size: 1024
- * page size: 128
- * density pages: 4
+ *
+ * === Large Layout ===
+ * flash size: 65536
+ * page size: 2048
+ * density pages: 16
+ * Simulated EEPROM size: 16384
+ *
+ * FlashBuf Layout:
+ * [Unused | Compact |  Write Log  ]
+ * [0......|512......|768......1023]
+ *
+ * === Tiny Layout ===
+ * flash size: 1024
+ * page size: 512
+ * density pages: 1
  * Simulated EEPROM size: 256
  *
  * FlashBuf Layout:
  * [Unused | Compact |  Write Log  ]
  * [0......|512......|768......1023]
+ *
  */
 
-#define EEPROM_SIZE 256
-#define LOG_SIZE    256
-#define EEPROM_BASE 512
-#define LOG_BASE    768
+#define EEPROM_SIZE (FEE_PAGE_SIZE * FEE_DENSITY_PAGES / 2)
+#define LOG_SIZE    EEPROM_SIZE
+#define LOG_BASE    (FLASH_SIZE - LOG_SIZE)
+#define EEPROM_BASE (LOG_BASE - EEPROM_SIZE)
 
 /* Log encoding helpers */
 #define BYTE_VALUE(addr, value) (((addr) << 8) | (value))
@@ -275,6 +288,45 @@ TEST_F(EepromStm32Test, TestWordRoundTrip) {
     EXPECT_EQ(EEPROM_ReadDataWord(203), 0xcdef);
     EXPECT_EQ(EEPROM_ReadDataWord(EEPROM_SIZE-4), 0);
     EXPECT_EQ(EEPROM_ReadDataWord(EEPROM_SIZE-2), 1);
+}
+
+TEST_F(EepromStm32Test, TestByteWordBoundary) {
+    /* Direct compacted-area write */
+    EEPROM_WriteDataWord(0x7e, 0xdead);
+    EEPROM_WriteDataWord(0x80, 0xbeef);
+    /* Byte log entry */
+    EEPROM_WriteDataByte(0x7f, 0x3c);
+    /* Word log entry */
+    EEPROM_WriteDataByte(0x80, 0x18);
+    /* Check values */
+    EEPROM_Init();
+    EXPECT_EQ(EEPROM_ReadDataWord(0x7e), 0x3cad);
+    EXPECT_EQ(EEPROM_ReadDataWord(0x80), 0xbe18);
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE], BYTE_VALUE(0x7f, 0x3c));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+2], WORD_NEXT(0x80));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+4], (uint16_t)~0xbe18);
+    /* Byte log entries */
+    EEPROM_WriteDataWord(0x7e, 0xcafe);
+    /* Check values */
+    EEPROM_Init();
+    EXPECT_EQ(EEPROM_ReadDataWord(0x7e), 0xcafe);
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+6], BYTE_VALUE(0x7e, 0xfe));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+8], BYTE_VALUE(0x7f, 0xca));
+    /* Byte and Word log entries */
+    EEPROM_WriteDataWord(0x7f, 0xba5e);
+    /* Check values */
+    EEPROM_Init();
+    EXPECT_EQ(EEPROM_ReadDataWord(0x7f), 0xba5e);
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+10], BYTE_VALUE(0x7f, 0x5e));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+12], WORD_NEXT(0x80));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+14], (uint16_t)~0xbeba);
+    /* Word log entry */
+    EEPROM_WriteDataWord(0x80, 0xf00d);
+    /* Check values */
+    EEPROM_Init();
+    EXPECT_EQ(EEPROM_ReadDataWord(0x80), 0xf00d);
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+16], WORD_NEXT(0x80));
+    EXPECT_EQ(*(uint16_t*)&FlashBuf[LOG_BASE+18], (uint16_t)~0xf00d);
 }
 
 TEST_F(EepromStm32Test, TestDWordRoundTrip) {

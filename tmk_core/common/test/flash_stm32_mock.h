@@ -19,9 +19,16 @@
 //#define DEBUG_EEPROM
 
 #define FEE_FLASH_BASE FlashBuf
-#define FEE_MCU_FLASH_SIZE    1
-#define FEE_PAGE_SIZE       128
-#define FEE_DENSITY_PAGES     4
+
+#ifdef FLASH_STM32_MOCK_LARGE
+# define FEE_MCU_FLASH_SIZE   64
+# define FEE_PAGE_SIZE      2048
+# define FEE_DENSITY_PAGES    16
+#else
+# define FEE_MCU_FLASH_SIZE    1
+# define FEE_PAGE_SIZE       512
+# define FEE_DENSITY_PAGES     1
+#endif
 
 #define FLASH_SIZE (FEE_MCU_FLASH_SIZE*1024)
 extern uint8_t FlashBuf[FLASH_SIZE];
