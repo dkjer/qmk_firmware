@@ -6,14 +6,15 @@ import argparse
 from struct import pack, unpack
 import os, sys
 
-MAGIC_FEEA    = '\xea\xff\xfe\xff'
+MAGIC_FEEA     = '\xea\xff\xfe\xff'
 
-MAGIC_FEE9    = '\x16\x01'
-EMPTY_WORD    = '\xff\xff'
-BYTE_ENCODING = 0x8000
-VALUE_ENCODED = 0x6000
-VALUE_ZERO    = 0x4000
-VALUE_ONE     = 0x2000
+MAGIC_FEE9     = '\x16\x01'
+EMPTY_WORD     = '\xff\xff'
+WORD_ENCODING  = 0x8000
+VALUE_NEXT     = 0x6000
+VALUE_RESERVED = 0x4000
+VALUE_ENCODED  = 0x2000
+BYTE_RANGE     = 0x80
 
 CHUNK_SIZE = 1024
 
@@ -117,13 +118,13 @@ def decodeEepromFEE9(in_file, size):
 
         be_entry = unpack('>H', entry)[0]
         entry = unpack('H', entry)[0]
-        if entry & BYTE_ENCODING:
-            address = (entry >> 8) & 0x7F
+        if not (entry & WORD_ENCODING):
+            address = entry >> 8
             decoded[address] = entry & 0xFF
             if VERBOSE:
                 print("[0x%04x]: BYTE 0x%02x = 0x%02x" % (be_entry, address, decoded[address]))
         else:
-            if not (entry & VALUE_ENCODED):
+            if (entry & VALUE_NEXT) == VALUE_NEXT:
                 # Read next word as value
                 value = in_file.read(2)
                 if len(value) < 2:
@@ -132,25 +133,22 @@ def decodeEepromFEE9(in_file, size):
                 pos += 2
                 address = entry & 0x1FFF
                 address <<= 1
+                address += BYTE_RANGE
                 decoded[address]   = unpack('B', value[0])[0] ^ 0xFF
                 decoded[address+1] = unpack('B', value[1])[0] ^ 0xFF
                 be_value = unpack('>H', value)[0]
                 if VERBOSE:
                     print("[0x%04x 0x%04x]: WORD 0x%04x = 0x%02x%02x" % (be_entry, be_value, address, decoded[address+1], decoded[address]))
             else:
-                address = entry & 0x1FFF
-                address <<= 1
-                if (entry & VALUE_ENCODED) == VALUE_ENCODED:
-                    # Reserved for future use
+                # Reserved for future use
+                if entry & VALUE_RESERVED:
                     if VERBOSE:
                         print("[0x%04x]: RESERVED 0x%04x" % (be_entry, address))
                     continue
-                elif (entry & VALUE_ZERO) == VALUE_ZERO:
-                    decoded[address]   = 0
-                    decoded[address+1] = 0
-                else:
-                    decoded[address]   = 1
-                    decoded[address+1] = 0
+                address = entry & 0x1FFF
+                address <<= 1
+                decoded[address]   = (entry & VALUE_ENCODED) >> 13
+                decoded[address+1] = 0
                 if VERBOSE:
                     print("[0x%04x]: ENCODED 0x%04x = 0x%02x%02x" % (be_entry, address, decoded[address+1], decoded[address]))
 
