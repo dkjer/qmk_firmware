@@ -75,6 +75,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define I2C1_SCL_PAL_MODE 1
 #define I2C1_SDA_PAL_MODE 1
 
+/* Set I2C speed to 1Mhz */
+#define I2C1_TIMINGR_PRESC     0U
+#define I2C1_TIMINGR_SCLDEL    7U
+#define I2C1_TIMINGR_SDADEL    0U
+#define I2C1_TIMINGR_SCLH      9U
+#define I2C1_TIMINGR_SCLL     21U
+
 // This is a 7-bit address, that gets left-shifted and bit 0
 // set to 0 for write, 1 for read (as per I2C protocol)
 // The address will vary depending on your wiring:
