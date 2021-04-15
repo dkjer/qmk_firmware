@@ -36,10 +36,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DIODE_DIRECTION ROW2COL
 
 // Dynamic EEPROM
-// Something sensible or else VIA may crash
-// Users may enable more if they wish
-#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  4095
-#define DYNAMIC_KEYMAP_LAYER_COUNT 10
+#define FEE_DENSITY_PAGES       (2+8)  // 4KB of simulated EEPROM + 16KB of write logs
+#define FEE_DENSITY_BYTES        4096
+#define DYNAMIC_KEYMAP_LAYER_COUNT 12
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR  (FEE_DENSITY_BYTES - 1)
 
 // Mouse configuration
 #define MOUSEKEY_INTERVAL 16
@@ -62,16 +62,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define LED_3_PIN           LED_MR_LOCK_PIN
 #define LED_PIN_ON_STATE    0
 
+#ifdef RGB_MATRIX_ENABLE
+
 /* I2C Alternate function settings */
 #define I2C1_SCL_PAL_MODE 1
 #define I2C1_SDA_PAL_MODE 1
 
 /* Set I2C speed to 1Mhz */
 #define I2C1_TIMINGR_PRESC     0U
-#define I2C1_TIMINGR_SCLDEL    3U
+#define I2C1_TIMINGR_SCLDEL    7U
 #define I2C1_TIMINGR_SDADEL    0U
-#define I2C1_TIMINGR_SCLH     12U
-#define I2C1_TIMINGR_SCLL     31U
+#define I2C1_TIMINGR_SCLH      9U
+#define I2C1_TIMINGR_SCLL     21U
 
 // This is a 7-bit address, that gets left-shifted and bit 0
 // set to 0 for write, 1 for read (as per I2C protocol)
@@ -83,7 +85,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // ADDR1 represents A1:A0 of the 7-bit address.
 // ADDR2 represents A3:A2 of the 7-bit address.
 // The result is: 0b101(ADDR2)(ADDR1)
-#ifdef RGB_MATRIX_ENABLE
 #define DRIVER_ADDR_1 0b1010000
 #define DRIVER_ADDR_2 0b1010011
 
