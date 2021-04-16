@@ -26,6 +26,19 @@ qk_tap_dance_action_t tap_dance_actions[] = {
     [TD_GRV_ESC] = ACTION_TAP_DANCE_DOUBLE(KC_GRV, KC_ESC),
 };
 
+uint16_t typing_mode;
+enum {
+    TIME_RESET = SAFE_RANGE,
+    TIME_EEPRST,
+    KC_NOMODE,
+    KC_WIDE,
+    KC_SCRIPT,
+    KC_BLOCKS,
+    KC_REGIONAL,
+    KC_AUSSIE,
+    KC_ZALGO
+};
+
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   /* Layer 0
    * ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐
@@ -109,11 +122,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   ),
   /* Layer 4
    * ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐
-   * │RST│   │   │   │   │   │   │   │   │   │   │   │   │ DEBUG │
+   * │RST│NOM│WID│SCR│BLK│REG│AUS│   │   │   │   │   │   │EEPMRST│
    * ├───┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤
-   * │     │   │   │   │   │   │   │   │   │   │   │   │   │     │
+   * │     │   │F15│   │   │   │   │   │   │   │   │   │   │     │
    * ├─────┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴─────┤
-   * │      │   │   │   │   │   │   │   │   │   │   │   │        │
+   * │      │   │F14│DBG│   │   │   │   │   │   │   │   │        │
    * ├──────┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴────────┤
    * │        │   │   │   │   │   │   │   │   │   │   │          │
    * ├────┬───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤
@@ -121,9 +134,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
    * └────┴────┴────┴────────────────────────┴────┴────┴────┴────┘
    */
   [4] = LAYOUT_60_ansi(
-      RESET,    XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  DEBUG,
+      TIME_RESET,KC_NOMODE,KC_WIDE, KC_SCRIPT,KC_BLOCKS,KC_REGIONAL,KC_AUSSIE,KC_ZALGO,XXXXXXX, XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  TIME_EEPRST,
       XXXXXXX,  XXXXXXX,  KC_F15,   XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,
-      XXXXXXX,  XXXXXXX,  KC_F14,   XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
+      XXXXXXX,  XXXXXXX,  KC_F14,   DEBUG,    XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
       XXXXXXX,            XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,  XXXXXXX,            XXXXXXX,
       XXXXXXX,  XXXXXXX,  XXXXXXX,                                XXXXXXX,                                _______,  _______,  _______,  XXXXXXX
   ),
@@ -186,9 +199,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #define MEDIA_G 255
 #define MEDIA_B 38
 
+#define MEDIA_ALT_R 128
+#define MEDIA_ALT_G 255
+#define MEDIA_ALT_B 146
+
 #define RGB_R 0
 #define RGB_G 38
 #define RGB_B 255
+
+#define RGB_ALT_R 128
+#define RGB_ALT_G 146
+#define RGB_ALT_B 255
 
 #define SPECIAL_R 255
 #define SPECIAL_G 0
@@ -198,24 +219,47 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #define MOUSE_G 0
 #define MOUSE_B 255
 
+#define MOUSE_ALT_R 236
+#define MOUSE_ALT_G 128
+#define MOUSE_ALT_B 255
+
+#define ACTIVE_R 255
+#define ACTIVE_G 255
+#define ACTIVE_B 255
+
 void rgb_matrix_indicators_user(void) {
     if (host_keyboard_led_state().caps_lock)
     {
-        rgb_matrix_set_color(28, 0xFF, 0xFF, 0xFF);
+        rgb_matrix_set_color(28, ACTIVE_R, ACTIVE_G, ACTIVE_B);
     }
     if (IS_LAYER_ON(4)) {
         rgb_matrix_set_color(16, MEDIA_R, MEDIA_G, MEDIA_B);
         rgb_matrix_set_color(30, MEDIA_R, MEDIA_G, MEDIA_B);
+        // Debug 'D'
+        if (debug_enable) {
+            rgb_matrix_set_color(31, SPECIAL_R, SPECIAL_G, SPECIAL_B);
+        }
+        else {
+            rgb_matrix_set_color(31, ACTIVE_R, ACTIVE_G, ACTIVE_B);
+        }
+        for (uint16_t kc = KC_NOMODE; kc <= KC_ZALGO; ++kc) {
+            if (kc == typing_mode) {
+                rgb_matrix_set_color(kc - KC_NOMODE + 1, ACTIVE_R, ACTIVE_G, ACTIVE_B);
+            }
+            else {
+                rgb_matrix_set_color(kc - KC_NOMODE + 1, MOUSE_R, MOUSE_G, MOUSE_B);
+            }
+        }
 
         rgb_matrix_set_color(0, SPECIAL_R, SPECIAL_G, SPECIAL_B);
         rgb_matrix_set_color(13, SPECIAL_R, SPECIAL_G, SPECIAL_B);
     }
     else if (IS_LAYER_ON(3)) {
         // RGB Keys
-        rgb_matrix_set_color(1, RGB_R, RGB_G, RGB_B);
-        rgb_matrix_set_color(2, RGB_R, RGB_G, RGB_B);
-        rgb_matrix_set_color(3, RGB_R, RGB_G, RGB_B);
-        rgb_matrix_set_color(4, RGB_R, RGB_G, RGB_B);
+        rgb_matrix_set_color(1, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
+        rgb_matrix_set_color(2, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
+        rgb_matrix_set_color(3, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
+        rgb_matrix_set_color(4, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
 
         rgb_matrix_set_color(16, RGB_R, RGB_G, RGB_B);
         rgb_matrix_set_color(29, RGB_R, RGB_G, RGB_B);
@@ -224,10 +268,10 @@ void rgb_matrix_indicators_user(void) {
     }
     else if (IS_LAYER_ON(2)) {
         // Media keys
-        rgb_matrix_set_color(1, MEDIA_R, MEDIA_G, MEDIA_B);
-        rgb_matrix_set_color(2, MEDIA_R, MEDIA_G, MEDIA_B);
-        rgb_matrix_set_color(3, MEDIA_R, MEDIA_G, MEDIA_B);
-        rgb_matrix_set_color(4, MEDIA_R, MEDIA_G, MEDIA_B);
+        rgb_matrix_set_color(1, MEDIA_ALT_R, MEDIA_ALT_G, MEDIA_ALT_B);
+        rgb_matrix_set_color(2, MEDIA_ALT_R, MEDIA_ALT_G, MEDIA_ALT_B);
+        rgb_matrix_set_color(3, MEDIA_ALT_R, MEDIA_ALT_G, MEDIA_ALT_B);
+        rgb_matrix_set_color(4, MEDIA_ALT_R, MEDIA_ALT_G, MEDIA_ALT_B);
         rgb_matrix_set_color(5, MEDIA_R, MEDIA_G, MEDIA_B);
         rgb_matrix_set_color(6, MEDIA_R, MEDIA_G, MEDIA_B);
         rgb_matrix_set_color(7, MEDIA_R, MEDIA_G, MEDIA_B);
@@ -239,9 +283,9 @@ void rgb_matrix_indicators_user(void) {
         rgb_matrix_set_color(51, NAV_R, NAV_G, NAV_B);
 
         // RGB Keys
-        rgb_matrix_set_color(11, RGB_R, RGB_G, RGB_B);
-        rgb_matrix_set_color(12, RGB_R, RGB_G, RGB_B);
-        rgb_matrix_set_color(13, RGB_R, RGB_G, RGB_B);
+        rgb_matrix_set_color(11, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
+        rgb_matrix_set_color(12, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
+        rgb_matrix_set_color(13, RGB_ALT_R, RGB_ALT_G, RGB_ALT_B);
 
         rgb_matrix_set_color(16, RGB_R, RGB_G, RGB_B);
         rgb_matrix_set_color(29, RGB_R, RGB_G, RGB_B);
@@ -250,7 +294,7 @@ void rgb_matrix_indicators_user(void) {
 
         // Mouse Keys
         rgb_matrix_set_color(41, MOUSE_R, MOUSE_G, MOUSE_B);
-        rgb_matrix_set_color(42, MOUSE_R, MOUSE_G, MOUSE_B);
+        rgb_matrix_set_color(42, MOUSE_ALT_R, MOUSE_ALT_G, MOUSE_ALT_B);
         rgb_matrix_set_color(53, MOUSE_R, MOUSE_G, MOUSE_B);
         rgb_matrix_set_color(54, MOUSE_R, MOUSE_G, MOUSE_B);
         rgb_matrix_set_color(55, MOUSE_R, MOUSE_G, MOUSE_B);
@@ -270,8 +314,8 @@ void rgb_matrix_indicators_user(void) {
 
         // Mouse Keys
         rgb_matrix_set_color(41, MOUSE_R, MOUSE_G, MOUSE_B);
-        rgb_matrix_set_color(42, MOUSE_R, MOUSE_G, MOUSE_B);
-        rgb_matrix_set_color(43, MOUSE_R, MOUSE_G, MOUSE_B);
+        rgb_matrix_set_color(42, MOUSE_ALT_R, MOUSE_ALT_G, MOUSE_ALT_B);
+        rgb_matrix_set_color(43, MOUSE_ALT_R, MOUSE_ALT_G, MOUSE_ALT_B);
         rgb_matrix_set_color(53, MOUSE_R, MOUSE_G, MOUSE_B);
         rgb_matrix_set_color(54, MOUSE_R, MOUSE_G, MOUSE_B);
         rgb_matrix_set_color(55, MOUSE_R, MOUSE_G, MOUSE_B);
@@ -279,7 +323,14 @@ void rgb_matrix_indicators_user(void) {
 
 }
 
+void keyboard_post_init_user(void) {
+    typing_mode    = KC_NOMODE;
+}
+
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    static uint32_t reset_key_timer  = 0;
+    static uint32_t eeprst_key_timer = 0;
+
     switch (keycode) {
         case RESET:
             if (record->event.pressed) {
@@ -287,6 +338,119 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 on_all_leds();
             }
             break;
+
+        case TIME_RESET:
+            if (record->event.pressed) {
+                reset_key_timer = timer_read32();
+            } else {
+                if (timer_elapsed32(reset_key_timer) >= 500) {
+                    // Flash LEDs to indicate bootloader mode is enabled.
+                    on_all_leds();
+                    reset_keyboard();
+                }
+            }
+            return false;
+
+        case TIME_EEPRST:
+            if (record->event.pressed) {
+                eeprst_key_timer = timer_read32();
+            } else {
+                if (timer_elapsed32(eeprst_key_timer) >= 500) {
+                    eeconfig_init();
+                    // Flash LEDs to indicate eeprom was reset.
+                    on_all_leds();
+                    wait_ms(250);
+                    off_all_leds();
+                }
+            }
+            return false;
+
+        case KC_NOMODE:
+            if (record->event.pressed) {
+                if (typing_mode != KC_NOMODE) {
+                    dprint("Disabling repeat mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_WIDE:
+            if (record->event.pressed) {
+                if (typing_mode != KC_WIDE) {
+                    dprint("Enabling wide mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_SCRIPT:
+            if (record->event.pressed) {
+                if (typing_mode != KC_SCRIPT) {
+                    dprint("Enabling calligraphy mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_BLOCKS:
+            if (record->event.pressed) {
+                if (typing_mode != KC_BLOCKS) {
+                    dprint("Enabling blocks mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_REGIONAL:
+            if (record->event.pressed) {
+                if (typing_mode != KC_REGIONAL) {
+                    dprint("Enabling regional mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_AUSSIE:
+            if (record->event.pressed) {
+                if (typing_mode != KC_AUSSIE) {
+                    dprint("Enabling aussie mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+
+        case KC_ZALGO:
+            if (record->event.pressed) {
+                if (typing_mode != KC_ZALGO) {
+                    dprint("Enabling zalgo mode\n");
+                }
+                typing_mode = keycode;
+            }
+            return false;
+    }
+
+    if (((KC_A <= keycode) && (keycode <= KC_0)) || keycode == KC_SPACE) {
+        switch (typing_mode) {
+            case KC_WIDE:
+                return process_record_glyph_replacement(keycode, record, unicode_range_translator_wide);
+            case KC_SCRIPT:
+                return process_record_glyph_replacement(keycode, record, unicode_range_translator_script);
+            case KC_BLOCKS:
+                return process_record_glyph_replacement(keycode, record, unicode_range_translator_boxes);
+            case KC_REGIONAL:
+                if (!process_record_glyph_replacement(keycode, record, unicode_range_translator_regional)) {
+                    tap_unicode_glyph_nomods(0x200C);
+                    return false;
+                }
+                break;
+        }
+    }
+
+    switch (typing_mode) {
+        case KC_AUSSIE:
+            return process_record_aussie(keycode, record);
+        case KC_ZALGO:
+            return process_record_zalgo(keycode, record);
     }
     return true;
 }
