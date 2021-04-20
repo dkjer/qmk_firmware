@@ -34,7 +34,7 @@ extern "C" {
  *
  * FlashBuf Layout:
  * [Unused | Compact |  Write Log  ]
- * [0......|512......|768......1023]
+ * [0......|32768......|49152......65535]
  *
  * === Tiny Layout ===
  * flash size: 1024
@@ -109,10 +109,10 @@ TEST_F(EepromStm32Test, TestReadBadAddress) {
 }
 
 TEST_F(EepromStm32Test, TestReadByte) {
-    /* Direct compacted-area baseline: Address < 0x7F */
+    /* Direct compacted-area baseline: Address < 0x80 */
     FlashBuf[EEPROM_BASE+2] = ~0xef;
     FlashBuf[EEPROM_BASE+3] = ~0xbe;
-    /* Direct compacted-area baseline: Address >= 0x7F */
+    /* Direct compacted-area baseline: Address >= 0x80 */
     FlashBuf[EEPROM_BASE+EEPROM_SIZE-2] = ~0x78;
     FlashBuf[EEPROM_BASE+EEPROM_SIZE-1] = ~0x56;
     /* Check values */
@@ -136,10 +136,10 @@ TEST_F(EepromStm32Test, TestReadByte) {
 }
 
 TEST_F(EepromStm32Test, TestWriteByte) {
-    /* Direct compacted-area baseline: Address < 0x7F */
+    /* Direct compacted-area baseline: Address < 0x80 */
     EEPROM_WriteDataByte(2, 0xef);
     EEPROM_WriteDataByte(3, 0xbe);
-    /* Direct compacted-area baseline: Address >= 0x7F */
+    /* Direct compacted-area baseline: Address >= 0x80 */
     EEPROM_WriteDataByte(EEPROM_SIZE-2, 0x78);
     EEPROM_WriteDataByte(EEPROM_SIZE-1, 0x56);
     /* Check values */
@@ -154,11 +154,11 @@ TEST_F(EepromStm32Test, TestWriteByte) {
 }
 
 TEST_F(EepromStm32Test, TestByteRoundTrip) {
-    /* Direct compacted-area: Address < 0x7F */
+    /* Direct compacted-area: Address < 0x80 */
     EEPROM_WriteDataWord(0, 0xdead);
     EEPROM_WriteDataByte(2, 0xef);
     EEPROM_WriteDataByte(3, 0xbe);
-    /* Direct compacted-area: Address >= 0x7F */
+    /* Direct compacted-area: Address >= 0x80 */
     EEPROM_WriteDataByte(EEPROM_SIZE-2, 0x78);
     EEPROM_WriteDataByte(EEPROM_SIZE-1, 0x56);
     /* Check values */
@@ -181,10 +181,10 @@ TEST_F(EepromStm32Test, TestByteRoundTrip) {
 }
 
 TEST_F(EepromStm32Test, TestReadWord) {
-    /* Direct compacted-area baseline: Address < 0x7F */
+    /* Direct compacted-area baseline: Address < 0x80 */
     FlashBuf[EEPROM_BASE+0] = ~0xad;
     FlashBuf[EEPROM_BASE+1] = ~0xde;
-    /* Direct compacted-area baseline: Address >= 0x7F */
+    /* Direct compacted-area baseline: Address >= 0x80 */
     FlashBuf[EEPROM_BASE+200] = ~0xcd;
     FlashBuf[EEPROM_BASE+201] = ~0xab;
     FlashBuf[EEPROM_BASE+EEPROM_SIZE-4] = ~0x34;
@@ -212,10 +212,10 @@ TEST_F(EepromStm32Test, TestReadWord) {
 }
 
 TEST_F(EepromStm32Test, TestWriteWord) {
-    /* Direct compacted-area: Address < 0x7F */
+    /* Direct compacted-area: Address < 0x80 */
     EEPROM_WriteDataWord(0, 0xdead); // Aligned
     EEPROM_WriteDataWord(3, 0xbeef); // Unaligned
-    /* Direct compacted-area: Address >= 0x7F */
+    /* Direct compacted-area: Address >= 0x80 */
     EEPROM_WriteDataWord(200, 0xabcd); // Aligned
     EEPROM_WriteDataWord(203, 0x9876); // Unaligned
     EEPROM_WriteDataWord(EEPROM_SIZE-4, 0x1234);
@@ -255,10 +255,10 @@ TEST_F(EepromStm32Test, TestWriteWord) {
 }
 
 TEST_F(EepromStm32Test, TestWordRoundTrip) {
-    /* Direct compacted-area: Address < 0x7F */
+    /* Direct compacted-area: Address < 0x80 */
     EEPROM_WriteDataWord(0, 0xdead); // Aligned
     EEPROM_WriteDataWord(3, 0xbeef); // Unaligned
-    /* Direct compacted-area: Address >= 0x7F */
+    /* Direct compacted-area: Address >= 0x80 */
     EEPROM_WriteDataWord(200, 0xabcd); // Aligned
     EEPROM_WriteDataWord(203, 0x9876); // Unaligned
     EEPROM_WriteDataWord(EEPROM_SIZE-4, 0x1234);
@@ -330,10 +330,10 @@ TEST_F(EepromStm32Test, TestByteWordBoundary) {
 }
 
 TEST_F(EepromStm32Test, TestDWordRoundTrip) {
-    /* Direct compacted-area: Address < 0x7F */
+    /* Direct compacted-area: Address < 0x80 */
     eeprom_write_dword((uint32_t*)0, 0xdeadbeef); // Aligned
     eeprom_write_dword((uint32_t*)9, 0x12345678); // Unaligned
-    /* Direct compacted-area: Address >= 0x7F */
+    /* Direct compacted-area: Address >= 0x80 */
     eeprom_write_dword((uint32_t*)200, 0xfacef00d);
     eeprom_write_dword((uint32_t*)(EEPROM_SIZE-4), 0xba5eba11); // Aligned
     eeprom_write_dword((uint32_t*)(EEPROM_SIZE-9), 0xcafed00d); // Unaligned
@@ -364,12 +364,12 @@ TEST_F(EepromStm32Test, TestDWordRoundTrip) {
 TEST_F(EepromStm32Test, TestBlockRoundTrip) {
     char src0[] = "0123456789abcdef";
     void* src1 = (void*)&src0[1];
-    /* Various alignments of src & dst, Address < 0x7F */
+    /* Various alignments of src & dst, Address < 0x80 */
     eeprom_write_block(src0, (void*)  0, sizeof(src0));
     eeprom_write_block(src0, (void*) 21, sizeof(src0));
     eeprom_write_block(src1, (void*) 40, sizeof(src0)-1);
     eeprom_write_block(src1, (void*) 61, sizeof(src0)-1);
-    /* Various alignments of src & dst, Address >= 0x7F */
+    /* Various alignments of src & dst, Address >= 0x80 */
     eeprom_write_block(src0, (void*)140, sizeof(src0));
     eeprom_write_block(src0, (void*)161, sizeof(src0));
     eeprom_write_block(src1, (void*)180, sizeof(src0)-1);
