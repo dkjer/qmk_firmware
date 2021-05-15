@@ -99,6 +99,27 @@ void matrix_init_kb(void) {
     matrix_init_user();
 }
 
+#ifdef LED_MATRIX_ENABLE
+typedef void (*led_func_pointer)(void);
+
+static void __attribute__((noinline)) handleKeycodeLED(const uint8_t is_shifted, const uint8_t* pval, const led_func_pointer inc_func, const led_func_pointer dec_func) {
+#ifndef LED_LIMITS_INDICATOR_DISABLED
+    uint8_t old_val = (pval ? *pval : 0);
+#endif
+    if (is_shifted) {
+        dec_func();
+    } else {
+        inc_func();
+    }
+#ifndef LED_LIMITS_INDICATOR_DISABLED
+    /* If the value reached its limit, blink leds */
+    if (pval && (*pval == old_val)) {
+        blink_all_leds(2);
+    }
+#endif
+}
+#endif
+
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     if (!process_record_user(keycode, record)) { return false; }
     switch (keycode) {
@@ -119,25 +140,31 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             if (get_winlock_state()) { return false; }
             break;
 #endif
-#if defined(LED_MATRIX_ENABLE) && !defined(LED_LIMITS_INDICATOR_DISABLED)
-        case BL_INC:
-        case BL_DEC:
-            if (record->event.pressed) {
-                uint8_t old_val = led_matrix_eeconfig.val;
-                if (keycode == BL_INC) {
-                    led_matrix_increase_val();
-                }
-                else /* keycode == BL_DEC */ {
-                    led_matrix_decrease_val();
-                }
-                /* If the value reached its limit, blink leds */
-                if (led_matrix_eeconfig.val == old_val) {
-                    blink_all_leds(2);
-                }
-            }
-            return false;
-#endif
     }
+
+#if defined(LED_MATRIX_ENABLE)
+    uint8_t shifted = get_mods() & MOD_MASK_SHIFT;
+    if (record->event.pressed) {
+        switch (keycode) {
+            case BL_DEC:
+                shifted = !shifted;
+            case BL_INC:
+                handleKeycodeLED(shifted, &led_matrix_eeconfig.val,
+                                 led_matrix_increase_val, led_matrix_decrease_val);
+                return false;
+            case BL_STEP:
+                handleKeycodeLED(shifted, NULL,
+                                 led_matrix_step, led_matrix_step_reverse);
+                return false;
+            case RGB_SPD:
+                shifted = !shifted;
+            case RGB_SPI:
+                handleKeycodeLED(shifted, &led_matrix_eeconfig.speed,
+                                 led_matrix_increase_speed, led_matrix_decrease_speed);
+                return false;
+        }
+    }
+#endif
     return true;
 }
 
