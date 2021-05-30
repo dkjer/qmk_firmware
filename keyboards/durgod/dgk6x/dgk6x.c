@@ -16,6 +16,9 @@
 
 #include "dgk6x.h"
 
+#include <ch.h>
+#include <hal.h>
+
 /* Private Functions */
 void off_all_leds(void) {
     writePinHigh(LED_CAPS_LOCK_PIN);
@@ -37,6 +40,21 @@ void led_init_ports(void) {
     off_all_leds();
 }
 
+
+/* Wait 30us between columns */
+#ifndef MATRIX_IO_DELAY
+#    define MATRIX_IO_DELAY 30
+#endif
+
+/* 1 MHz interval, no callback */
+static const GPTConfig gpt3cfg = {
+    100000, NULL, 0, 0
+};
+
+void matrix_output_unselect_delay(void) {
+    gptStart(&GPTD3, &gpt3cfg);
+    gptPolledDelay(&GPTD3, MATRIX_IO_DELAY);
+}
 
 #ifndef WINLOCK_DISABLED
 static bool win_key_locked = false;
