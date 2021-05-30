@@ -40,7 +40,7 @@
 #define DYNAMIC_KEYMAP_LAYER_COUNT 16
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
-#define DEBOUNCE 0
+#define DEBOUNCE 3
 #define USB_POLLING_INTERVAL_MS 1
 #define QMK_KEYS_PER_SCAN 12
 
