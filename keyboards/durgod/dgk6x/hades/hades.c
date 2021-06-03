@@ -41,7 +41,7 @@ const is31_led g_is31_leds[DRIVER_LED_TOTAL] = {
    {0, C_12,  B_12,  A_12}, // -
    {0, C_13,  B_13,  A_13}, // =
    {0, C_14,  B_14,  A_14}, // Bksp
-   {0, C_15,  B_15,  A_15}, // Del 
+   {0, C_15,  B_15,  A_15}, // Del
 
    {0, F_1,   E_1,   D_1},  // Tab
    {0, F_2,   E_2,   D_2},  // Q
