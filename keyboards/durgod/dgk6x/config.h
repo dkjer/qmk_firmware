@@ -39,7 +39,7 @@
 /* Bootmagic Lite key configuration */
 #define EARLY_INIT_PERFORM_BOOTLOADER_JUMP TRUE
 #define BOOTMAGIC_LITE_ROW                 0
-#define BOOTMAGIC_LITE_COLUMN              0
+#define BOOTMAGIC_LITE_COLUMN              1
 
 /* LED indicator pins */
 #define LED_CAPS_LOCK_PIN   C4
@@ -47,6 +47,11 @@
 #define LED_SCROLL_LOCK_PIN A8
 #define LED_MR_LOCK_PIN     LED_SCROLL_LOCK_PIN
 #define LED_PIN_ON_STATE    0
+
+/* Rotary Encoder */
+#define ENCODERS_PAD_A { B4, B5 }
+#define ENCODERS_PAD_B { B3, A15 }
+#define ENCODER_RESOLUTIONS { 2, 2 }
 
 #ifdef RGB_MATRIX_ENABLE
 // This is a 7-bit address, that gets left-shifted and bit 0

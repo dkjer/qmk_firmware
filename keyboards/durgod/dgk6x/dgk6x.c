@@ -37,6 +37,33 @@ void led_init_ports(void) {
     off_all_leds();
 }
 
+bool encoder_update_kb(uint8_t index, bool clockwise) {
+    if (index == 0) { /* First encoder */
+        if (clockwise) {
+            tap_code(KC_MS_WH_DOWN);
+            //tap_code(KC_DOWN);
+            //rgb_matrix_increase_hue();
+        } else {
+            tap_code(KC_MS_WH_UP);
+            //tap_code(KC_UP);
+            //rgb_matrix_decrease_hue();
+        }
+    }
+    else if (index == 1) { /* Second encoder */
+        if (clockwise) {
+            //tap_code(KC_MS_WH_RIGHT);
+            tap_code(KC_MS_WH_UP);
+            //tap_code(KC_RIGHT);
+            //rgb_matrix_increase_speed();
+        } else {
+            //tap_code(KC_MS_WH_LEFT);
+            tap_code(KC_MS_WH_DOWN);
+            //tap_code(KC_LEFT);
+            //rgb_matrix_decrease_speed();
+        }
+    }
+    return true;
+}
 
 #ifndef WINLOCK_DISABLED
 static bool win_key_locked = false;
